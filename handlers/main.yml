@@ -1,0 +1,18 @@
+---
+# handlers file for nexus
+- name: start nexus service
+  service:
+    name: nexus.service
+    state: started
+    enabled: true
+
+- name: restart nexus service
+  service:
+    name: nexus.service
+    state: restarted
+    enabled: true
+
+- name: daemon-reload
+  systemd:
+    name: systemd
+    state: reloaded

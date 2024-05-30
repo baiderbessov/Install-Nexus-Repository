@@ -1,0 +1,19 @@
+-Xms2703m
+-Xmx2703m
+-XX:MaxDirectMemorySize=2703m
+-XX:+UnlockDiagnosticVMOptions
+-XX:+LogVMOutput
+-XX:LogFile={{ NEXUS_DATA }}/log/jvm.log
+-XX:-OmitStackTraceInFastThrow
+-Djava.net.preferIPv4Stack=true
+-Dkaraf.home=.
+-Dkaraf.base=.
+-Dkaraf.etc={{ NEXUS_DIR }}/etc/karaf
+-Djava.util.logging.config.file={{ NEXUS_DIR }}/etc/karaf/java.util.logging.properties
+-Dkaraf.data={{ NEXUS_DATA }}
+-Dkaraf.log={{ NEXUS_DATA }}/log
+-Djava.io.tmpdir={{ NEXUS_DATA }}/tmp
+-Dkaraf.startLocalConsole=false
+-Djdk.tls.ephemeralDHKeySize=2048
+-Djava.util.prefs.userRoot={{ NEXUS_DATA }}/javaprefs
+-Djava.endorsed.dirs=lib/endorse

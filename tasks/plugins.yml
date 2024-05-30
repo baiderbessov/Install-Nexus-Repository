@@ -1,0 +1,85 @@
+---
+- name: Check if Keycloak.json is already used
+  stat:
+    path: "{{ KEYCLOAK_PLUGIN_DIR }}"
+  register: keycloak_installed
+
+
+- name: Create Keycloak plugin directory
+  file:
+    path: "{{ KEYCLOAK_PLUGIN_DIR }}"
+    state: directory
+    mode: 0755
+  when: keycloak_installed.stat.exists == false
+
+- name: Change file ownership, group and permissions
+  file:
+    path: /data/nexus/system/org/github
+    owner: "{{ NEXUS_USER_GROUP }}"
+    group: "{{ NEXUS_USER_GROUP }}"
+    recurse: yes
+    mode: 0755
+  when: keycloak_installed.stat.exists == false
+
+- name: Download Keycloak plugin for Nexus
+  get_url:
+    url: "{{ KEYCLOAK_PLUGIN_URL }}"
+    dest: "{{ KEYCLOAK_PLUGIN_DIR }}"
+    owner: "{{ NEXUS_USER_GROUP }}"
+    group: "{{ NEXUS_USER_GROUP }}"
+    mode: 0755
+  when: keycloak_installed.stat.exists == false
+
+- name: Command echo
+  shell: |
+    cd /opt
+    echo "mvn\\:org.github.flytreeleft/nexus3-keycloak-plugin/0.6.0-SNAPSHOT = 200" >> {{ NEXUS_DIR }}/etc/karaf/startup.properties
+  when: keycloak_installed.stat.exists == false
+
+- name: Create keycloak.json
+  template:
+    src: keycloak.json.j2
+    dest: "{{ NEXUS_KEYCLOAK_DIR }}"
+    owner: "{{ NEXUS_USER_GROUP }}"
+    group: "{{ NEXUS_USER_GROUP }}"
+    mode: 0600
+  when: keycloak_installed.stat.exists == false
+
+- name: restart nexus service
+  service:
+    name: nexus.service
+    state: restarted
+    enabled: true
+  when: keycloak_installed.stat.exists == false
+
+# - name: Import SSL certificate from google.com to a given cacerts keystore
+#   community.general.java_cert:
+#     cert_url: "{{ KEYCLOAK_SERVER }}"
+#     cert_port: 443
+#     keystore_path: /etc/pki/java/cacerts
+#     keystore_pass: changeit
+#     executable: /bin/keytool
+#     state: present
+#   tags: keycloak
+
+- name: Install net-tools
+  dnf:
+    name: net-tools
+    state: latest
+  tags: test-nexus
+
+- name: 120 second pause (Nexus service is starting)
+  pause:
+    seconds: 60
+  when: keycloak_installed.stat.exists == false
+
+- name: "Read a password file"
+  shell: |
+    cat /data/nexus-data/admin.password
+  register: file_content
+  when: keycloak_installed.stat.exists == false
+
+- name: "Print the password to a console"
+  debug:
+    msg: "YOUR PASSWORD IS: [ {{ file_content.stdout }} ]"
+  when: keycloak_installed.stat.exists == false

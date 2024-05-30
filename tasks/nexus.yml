@@ -1,0 +1,127 @@
+---
+# tasks file for nexus
+- name: Check if Nexus is already installed
+  stat:
+    path: /data/nexus
+  register: nexus_installed
+
+- name: Create nexus-data directory
+  file:
+    path: "{{ NEXUS_DATA }}"
+    state: directory
+    mode: 0755
+  when: nexus_installed.stat.exists == false
+
+- name: Create nexus directory
+  file:
+    path: "{{ NEXUS_DIR }}"
+    state: directory
+    mode: 0755
+  when: nexus_installed.stat.exists == false
+
+- name: Download Nexus package
+  get_url:
+    url: "{{ NEXUS_URL }}"
+    dest: "{{ NEXUS_DIR }}/nexus-package.tar.gz"
+    checksum: "md5:{{ NEXUS_MD5_CHECKSUM }}"
+  when: nexus_installed.stat.exists == false
+
+- name: Extract Nexus package
+  unarchive:
+    src: "{{ NEXUS_DIR }}/nexus-package.tar.gz"
+    dest: "{{ NEXUS_DIR }}"
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  when: nexus_installed.stat.exists == false
+
+- name: Ensure nexus group exists
+  group:
+    name: "{{ NEXUS_USER_GROUP }}"
+    state: present
+  when: nexus_installed.stat.exists == false
+
+- name: Adding or modifying a service account for Nexus
+  user:
+    name: "{{ NEXUS_USER_GROUP }}"
+    comment: Nexus Service Account
+    system: yes
+    shell: /sbin/nologin
+    home: /var/lib/nexus
+    group: "{{ NEXUS_USER_GROUP }}"
+    state: present
+  when: nexus_installed.stat.exists == false
+
+- name: Change file ownership, group and permissions
+  file:
+    path: /data ########## !!!!!!
+    owner: "{{ NEXUS_USER_GROUP }}"
+    group: "{{ NEXUS_USER_GROUP }}"
+    recurse: yes
+    mode: 0755
+  when: nexus_installed.stat.exists == false
+
+- name: Change file ownership, group and permissions
+  file:
+    path: "{{ NEXUS_DIR }}"
+    owner: "{{ NEXUS_USER_GROUP }}"
+    group: "{{ NEXUS_USER_GROUP }}"
+    recurse: yes
+    mode: 0755
+  when: nexus_installed.stat.exists == false
+
+- name: Set JAVA_HOME and NEXUS_HOME
+  lineinfile:
+    dest: /etc/bashrc
+    line: |
+      export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which javac)))))
+      export NEXUS_HOME={{NEXUS_DIR}}
+  when: nexus_installed.stat.exists == false
+
+- name: Load updated environment variables
+  shell: source /etc/bashrc
+  args:
+    executable: /bin/bash
+  when: nexus_installed.stat.exists == false
+
+- name: Copy and overwrite $NEXUS_HOME/bin/nexus.vmoptions from template
+  template:
+    src: nexus.vmoptions.j2
+    dest: "{{ NEXUS_VMOPTIONS_FILE }}"
+    owner: "{{ NEXUS_USER_GROUP }}"
+    group: "{{ NEXUS_USER_GROUP }}"
+    mode: 0644
+  when: nexus_installed.stat.exists == false
+
+- name: Configure nexus service account in $NEXUS_HOME/bin/nexus.rc
+  lineinfile:
+    path: "{{ NEXUS_RC_FILE }}"
+    line: run_as_user="nexus"
+  when: nexus_installed.stat.exists == false
+
+- name: Create SystemD service file in /etc/systemd/system/nexus.service
+  template:
+    src: nexus.service.j2
+    dest: "{{ NEXUS_SERVICE_FILE }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: nexus_installed.stat.exists == false
+
+- name: Increasing the open file limit of nexus user in /etc/security/limits.conf
+  lineinfile:
+    path: "{{ NEXUS_LIMITS_FILE }}"
+    state: present
+    line: "nexus    -    nofile    65536"
+  when: nexus_installed.stat.exists == false
+
+- name: Set SELinux context for Nexus binary
+  command:
+    cmd: "chcon -t bin_t /data/nexus/bin/nexus"
+  when: nexus_installed.stat.exists == false
+
+- name: start nexus service
+  service:
+    name: nexus.service
+    state: started
+    enabled: true
+  when: nexus_installed.stat.exists == false

@@ -1,0 +1,24 @@
+---
+- name: Ensure firewalld is installed
+  dnf:
+    name: "firewalld"
+    state: present
+    allow_downgrade: yes
+
+- name: Start and enable firewalld
+  systemd:
+   state: started
+   name: firewalld
+   enabled: yes
+
+- name: Open TCP port 80, 443 and 8081 through firewall    
+  firewalld:
+    zone: public
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+    immediate: true
+  with_items: 
+    - 80/tcp
+    - 443/tcp
+    - 8081/tcp

@@ -1,0 +1,14 @@
+{
+  "realm": "platform",
+  "auth-server-url": "{{ KEYCLOAK_SERVER }}",
+  "ssl-required": "none",
+  "resource": "nexus",
+  "verify-token-audience": true,
+  "credentials": {
+    "secret": "{{ KEYCLOAK_SECRET }}"
+  },
+  "confidential-port": 0,
+  "policy-enforcer": {
+    "credentials": {}
+  }
+}

@@ -1,0 +1,1 @@
+This role for installing Nexus repository with LoadBalancer!

@@ -1,0 +1,11 @@
+- import_tasks: install_java.yml
+  tags: ["nexus"]
+
+- import_tasks: nexus.yml
+  tags: ["nexus"]
+
+- import_tasks: firewalld.yml
+  tags: ["nexus"]
+
+# - import_tasks: plugins.yml
+#   tags: ["nexus"]

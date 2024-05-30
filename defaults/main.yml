@@ -1,0 +1,33 @@
+---
+NEXUS_SERVER:   # DNS_NAME
+NEXUS_HOSTNAME: # FQDN
+
+NEXUS_VERSION: 3.68.1-02
+NEXUS_URL: https://download.sonatype.com/nexus/3/nexus-{{ NEXUS_VERSION }}-java8-unix.tar.gz
+NEXUS_MD5_CHECKSUM: "250f38a2bbe6152026879c18697e08aa"
+NEXUS_USER_GROUP: nexus
+NEXUS_DIR: /data/nexus
+NEXUS_DATA: /data/nexus-data
+
+NEXUS_CONNECTION_FILE: /data/nexus/etc/nexus-default.properties
+NEXUS_LIMITS_FILE: /etc/security/limits.conf
+NEXUS_SERVICE_FILE_LOCATION: /etc/systemd/system/
+NEXUS_SERVICE_LOCATION: /data/nexus/bin/nexus
+NEXUS_ADDITIONAL_PACKAGES: unzip, wget, vim, tar, net-tools
+NEXUS_VMOPTIONS_FILE: /data/nexus/bin/nexus.vmoptions
+NEXUS_RC_FILE: /data/nexus/bin/nexus.rc
+NEXUS_SERVICE_FILE: /etc/systemd/system/nexus.service
+
+NEXUS_NGINX_CONF_FILE: /etc/nginx/conf.d/nexus.conf
+
+JAVA_VERSION: 1.8.0
+JAVA_DEVEL: true
+
+# If you want use OIDC provider uncoment this lines
+#KEYCLOAK_SERVER: https://keycloak.url
+#KEYCLOAK_SECRET: SECRET
+#NEXUS_KEYCLOAK_DIR: /data/nexus/etc/keycloak.json
+#KEYCLOAK_PLUGIN_VERSION: 0.6.0-SNAPSHOT
+#KEYCLOAK_PLUGIN_FILE: nexus3-keycloak-plugin-0.6.0-SNAPSHOT.jar
+#KEYCLOAK_PLUGIN_DIR: /data/nexus/system/org/github/flytreeleft/nexus3-keycloak-plugin/{{ KEYCLOAK_PLUGIN_VERSION }}
+#KEYCLOAK_PLUGIN_URL: https://github.com/flytreeleft/nexus3-keycloak-plugin/releases/download/0.6.0-prev1-SNAPSHOT/nexus3-keycloak-plugin-{{ KEYCLOAK_PLUGIN_VERSION }}.jar
